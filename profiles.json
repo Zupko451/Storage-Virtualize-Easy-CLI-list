@@ -1,0 +1,16 @@
+{
+  "systems": [
+    {
+      "name": "",
+      "ip": "192.168.67.71",
+      "port": 22,
+      "username": "brian.zupko"
+    },
+    {
+      "name": "",
+      "ip": "192.168.67.13",
+      "port": 22,
+      "username": "brian.zupko"
+    }
+  ]
+}
