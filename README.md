@@ -35,6 +35,15 @@ Then open **http://localhost:5000** in your browser.
 
 Options: `--port 8080`, `--host 0.0.0.0`, `--demo`.
 
+
+## Windows:
+Step	README      Windows
+Create venv	      python -m venv .venv
+Install deps		  .venv\Scripts\pip install -r requirements.txt
+Run App           .venv\Scripts\python app.py
+
+---
+
 ## How to use
 
 1. **Systems & login** — enter username / password / port (default `22`). Add each system's IP.
