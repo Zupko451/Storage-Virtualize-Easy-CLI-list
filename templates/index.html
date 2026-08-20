@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IBM Storage Virtualize — Easy List</title>
+<style>
+:root{
+  --navy:#0b2545; --navy2:#163966; --navy3:#1e4b80;
+  --cyan:#00b4d8; --cyan-dim:rgba(0,180,216,.13);
+  --ink:#0d1b2a; --muted:#64748b; --faint:#94a3b8;
+  --line:#e2e8f0; --card:#f8fafc; --bg:#eef2f7; --white:#fff;
+  --green:#059669; --green-bg:#ecfdf5; --green-line:#a7f3d0;
+  --amber:#b45309; --amber-bg:#fffbeb; --amber-line:#fde68a;
+  --red:#dc2626;   --red-bg:#fef2f2;   --red-line:#fecaca;
+  --gray:#475569;  --gray-bg:#f1f5f9;  --gray-line:#e2e8f0;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 14px rgba(0,0,0,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.5;min-height:100vh;
+  padding:16px 12px 56px;font-size:14px}
+.wrap{max-width:1400px;margin:0 auto}
+
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 55%,var(--navy3) 100%);
+  border-radius:var(--radius);padding:16px 22px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:40px;height:40px;background:var(--cyan);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+.hdr-text{flex:1;min-width:0}
+.hdr-text h1{font-size:17px;font-weight:700;color:#fff}
+.hdr-text p{font-size:12px;color:#94b3cc;margin-top:2px}
+.badge{background:#f59e0b;color:#3b2600;font-weight:700;font-size:11px;
+  padding:4px 10px;border-radius:20px;letter-spacing:.3px}
+
+.grid2{display:grid;grid-template-columns:minmax(340px,1fr) minmax(340px,1.15fr);gap:14px;align-items:start}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+
+.panel{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 18px;margin-bottom:14px}
+.panel h2{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;
+  letter-spacing:.4px;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.panel h2 .num{background:var(--cyan);color:var(--navy);width:20px;height:20px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+
+label.fld{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px}
+input[type=text],input[type=password],input[type=number]{width:100%;padding:8px 10px;
+  border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13px;color:var(--ink);
+  background:var(--white);font-family:inherit}
+input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px var(--cyan-dim)}
+.row{display:flex;gap:8px}
+.creds-grid{display:grid;grid-template-columns:1fr 1fr 78px;gap:8px;margin-bottom:10px}
+
+.chk{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);
+  cursor:pointer;margin:4px 0 12px;user-select:none}
+.chk input{width:15px;height:15px;accent-color:var(--cyan)}
+
+table.sys{width:100%;border-collapse:collapse;margin-bottom:10px}
+table.sys th{font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--faint);
+  text-align:left;padding:2px 6px 5px;font-weight:600}
+table.sys td{padding:3px 4px;vertical-align:top}
+table.sys input{padding:6px 8px;font-size:12.5px}
+.iconbtn{background:none;border:none;color:var(--faint);cursor:pointer;font-size:17px;
+  line-height:1;padding:4px 6px;border-radius:6px}
+.iconbtn:hover{background:var(--red-bg);color:var(--red)}
+
+.btn{border:none;border-radius:var(--radius-sm);padding:9px 15px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--cyan);color:var(--navy);font-weight:700}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:var(--gray-bg);color:var(--gray);border:1px solid var(--line)}
+.btn-ghost:hover{background:#e6edf5}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.search-wrap{position:relative}
+#search{padding-left:32px}
+.search-ic{position:absolute;left:10px;top:9px;color:var(--faint)}
+.suggest{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 4px);background:var(--white);
+  border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow);
+  max-height:320px;overflow:auto;display:none}
+.suggest.open{display:block}
+.sug{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line)}
+.sug:last-child{border-bottom:none}
+.sug:hover,.sug.active{background:var(--cyan-dim)}
+.sug .t{font-size:13px;font-weight:600;color:var(--ink)}
+.sug .d{font-size:11.5px;color:var(--muted);margin-top:1px}
+.sug .c{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--navy3);
+  background:var(--gray-bg);padding:1px 5px;border-radius:4px}
+.cat-label{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);
+  padding:7px 12px 3px;font-weight:700;background:#fafbfc}
+
+.selected{background:var(--cyan-dim);border:1px solid var(--cyan);border-radius:var(--radius-sm);
+  padding:10px 12px;margin-top:10px;display:none}
+.selected.show{display:block}
+.selected .lbl{font-size:13px;font-weight:700;color:var(--navy)}
+.selected .desc{font-size:12px;color:var(--ink);margin:2px 0 6px}
+.selected .cmd{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#fff;
+  background:var(--navy);padding:4px 9px;border-radius:5px;display:inline-block}
+
+.adv{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.adv summary{font-size:12px;color:var(--muted);cursor:pointer;font-weight:600}
+.adv .hint{font-size:11px;color:var(--faint);margin:6px 0}
+
+.msg{padding:10px 13px;border-radius:var(--radius-sm);font-size:12.5px;margin-bottom:12px}
+.msg-err{background:var(--red-bg);border:1px solid var(--red-line);color:#991b1b}
+.msg-ok{background:var(--green-bg);border:1px solid var(--green-line);color:#065f46}
+
+/* results */
+.results-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.results-bar .cmd{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--navy);
+  background:var(--white);border:1px solid var(--line);padding:4px 9px;border-radius:5px}
+.spacer{flex:1}
+.res-scroll{overflow-x:scroll;overflow-y:hidden;padding-bottom:8px;cursor:grab;
+  /* pin width to viewport so the flex children overflow into scroll space */
+  max-width:calc(100vw - 60px)}
+.res-scroll.panning{cursor:grabbing;user-select:none}
+.res-grid{display:flex;gap:14px;align-items:flex-start;width:max-content}
+.syscard{flex:0 0 auto;width:440px;max-width:88vw;background:var(--white);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.syscard.wide{width:640px}
+.sc-head{background:var(--navy);color:#fff;padding:9px 13px;display:flex;align-items:center;gap:8px}
+.sc-head .nm{font-weight:700;font-size:13.5px}
+.sc-head .ip{font-size:11px;color:#94b3cc;font-family:ui-monospace,Menlo,monospace}
+.sc-head .cnt{margin-left:auto;font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:12px}
+.sc-body{overflow:auto;max-height:62vh}
+.sc-err{padding:14px;color:#991b1b;background:var(--red-bg);font-size:12.5px}
+
+table.data{border-collapse:collapse;width:100%;font-size:12px}
+table.data th{position:sticky;top:0;background:var(--card);color:var(--navy);text-align:left;
+  padding:7px 10px;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;font-weight:700;
+  border-bottom:2px solid var(--line);white-space:nowrap;z-index:1;
+  cursor:grab;user-select:none}
+table.data th:active{cursor:grabbing}
+table.data th.col-dragging{opacity:.35}
+table.data th.col-drag-over{box-shadow:inset -3px 0 0 var(--cyan)}
+table.data td{padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+table.data tr:nth-child(even) td{background:#fbfcfe}
+table.data td.num{text-align:right}
+table.data tr.total td{font-weight:700;background:var(--cyan-dim)!important;
+  border-top:2px solid var(--cyan);position:sticky;bottom:0}
+/* row drag */
+table.data tbody tr{cursor:default}
+table.data tbody tr.row-dragging td{opacity:.35}
+table.data tbody tr.row-drag-over td{box-shadow:inset 0 -2px 0 var(--cyan)}
+.row-grip{display:inline-block;color:var(--faint);cursor:grab;padding:0 6px 0 0;
+  font-size:13px;line-height:1;vertical-align:middle;opacity:.32;transition:opacity .1s}
+.row-grip:active{cursor:grabbing}
+table.data tbody tr:hover .row-grip{opacity:1;color:var(--cyan)}
+td.grip-cell{width:18px;padding:0 2px!important;border-bottom:1px solid var(--line);vertical-align:middle}
+/* header grip cell (keeps header aligned 1:1 with body's grip column) */
+table.data th.grip-cell{cursor:default;padding:0 2px;background:var(--card)}
+/* small "grab me" dots that appear on a column header when you hover it */
+.th-grip{color:var(--faint);font-size:9px;letter-spacing:-1px;margin-right:5px;
+  opacity:.28;transition:opacity .1s;vertical-align:middle}
+table.data th:hover .th-grip{opacity:.85;color:var(--cyan)}
+/* per-card toolbar buttons (Reset / Apply to all) */
+.sc-head .sc-btns{margin-left:auto;display:flex;gap:6px;align-items:center}
+.sc-head .sc-btns .cnt{margin-left:0}
+.sc-btn{background:rgba(255,255,255,.12);color:#dbeafe;border:1px solid rgba(255,255,255,.22);
+  border-radius:6px;font-size:11px;font-weight:600;padding:3px 8px;cursor:pointer;
+  font-family:inherit;white-space:nowrap;line-height:1.4}
+.sc-btn:hover{background:rgba(255,255,255,.24);color:#fff}
+.sc-btn:active{transform:translateY(1px)}
+.chip{display:inline-block;padding:1px 9px;border-radius:20px;font-size:11px;font-weight:600;
+  border:1px solid}
+.chip-green{background:var(--green-bg);color:var(--green);border-color:var(--green-line)}
+.chip-amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line)}
+.chip-red{background:var(--red-bg);color:var(--red);border-color:var(--red-line)}
+.chip-gray{background:var(--gray-bg);color:var(--gray);border-color:var(--gray-line)}
+.empty-state{color:var(--faint);text-align:center;padding:40px 20px;font-size:13px}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.foot{text-align:center;color:var(--faint);font-size:11px;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🗄️</div>
+    <div class="hdr-text">
+      <h1>IBM Storage Virtualize — Easy List</h1>
+      <p>Search in plain English &middot; run read-only list commands &middot; compare systems side by side</p>
+    </div>
+  </header>
+
+  <div class="grid2">
+    <!-- ============ SYSTEMS ============ -->
+    <div>
+    <div class="panel">
+      <h2><span class="num">1</span> Systems &amp; login</h2>
+
+      <div class="creds-grid">
+        <div><label class="fld">Username</label><input type="text" id="gUser" placeholder="superuser" autocomplete="off"></div>
+        <div><label class="fld">Password</label><input type="password" id="gPass" placeholder="••••••••" autocomplete="off"></div>
+        <div><label class="fld">Port</label><input type="number" id="gPort" value="22" min="1" max="65535"></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="sameCreds" checked>
+        Use the same username / password / port for all systems</label>
+
+      <table class="sys">
+        <thead><tr id="sysHead"></tr></thead>
+        <tbody id="sysBody"></tbody>
+      </table>
+
+      <div class="btnrow">
+        <button class="btn btn-ghost" id="addSys">＋ Add system</button>
+        <button class="btn btn-ghost" id="saveHosts" title="Saves IP / username / port only. Never saves passwords.">💾 Save hosts</button>
+        <span id="saveNote" style="font-size:11px;color:var(--faint)"></span>
+      </div>
+    </div>
+    </div>
+
+    <!-- ============ QUERY ============ -->
+    <div>
+    <div class="panel">
+      <h2><span class="num">2</span> What do you want to see?</h2>
+
+      <div class="search-wrap">
+        <span class="search-ic">🔍</span>
+        <input type="text" id="search" autocomplete="off"
+               placeholder="e.g. show all volumes, capacity of all volumes, list pools…">
+        <div class="suggest" id="suggest"></div>
+      </div>
+
+      <div class="selected" id="selBox">
+        <div class="lbl" id="selLbl"></div>
+        <div class="desc" id="selDesc"></div>
+        <span class="cmd" id="selCmd"></span>
+      </div>
+
+      <details class="adv">
+        <summary>Advanced — run any list command directly</summary>
+        <div class="hint">Read-only <code>ls*</code> commands only (e.g. <code>lsdrive</code>, <code>lsfcmap -delim :</code>). Mutating commands are blocked.</div>
+        <div class="row">
+          <input type="text" id="freeCmd" list="cmdList" placeholder="lsvdisk" autocomplete="off">
+          <button class="btn btn-ghost" id="useFree">Use</button>
+        </div>
+        <datalist id="cmdList"></datalist>
+      </details>
+
+      <div style="margin-top:14px" class="btnrow">
+        <button class="btn btn-primary" id="runBtn">▶ Run</button>
+        <span id="runState" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div id="topMsg"></div>
+
+  <!-- ============ RESULTS ============ -->
+  <div class="panel" id="resultsPanel">
+    <div class="results-bar">
+      <h2 style="margin:0">Results</h2>
+      <span class="cmd" id="ranCmd" style="display:none"></span>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="exportCsv" style="display:none">⬇ Export CSV</button>
+    </div>
+    <div class="res-scroll"><div class="res-grid" id="resGrid">
+      <div class="empty-state">Choose a system and a query, then press <b>Run</b>. Results appear here side by side.</div>
+    </div></div>
+  </div>
+
+  <div class="foot">Read-only tool &middot; passwords are kept in memory only and are never saved to disk.</div>
+</div>
+
+<script>
+"use strict";
+let CATALOG = [], ALL_CMDS = [];
+let selectedCommand = "", selectedFormatters = {}, selectedColumns = [];
+let lastResults = null, lastCommand = "";
+
+// ---------- capacity / status formatting ----------
+const UNIT = {B:1, KB:1024, MB:1024**2, GB:1024**3, TB:1024**4, PB:1024**5};
+function parseCap(v){
+  if(v==null) return null;
+  const m = String(v).trim().match(/^([0-9]+(?:\.[0-9]+)?)\s*(PB|TB|GB|MB|KB|B)?$/i);
+  if(!m) return null;
+  return parseFloat(m[1]) * UNIT[(m[2]||"B").toUpperCase()];
+}
+function humanize(bytes){
+  if(bytes==null) return "";
+  let n = bytes;
+  const u = ["B","KB","MB","GB","TB","PB"];
+  for(let i=0;i<u.length;i++){
+    if(Math.abs(n) < 1024 || i===u.length-1)
+      return i===0 ? Math.round(n)+" B" : n.toFixed(2)+" "+u[i];
+    n/=1024;
+  }
+}
+const CAP_NAME = /(capacity|free_space|used|virtual|real_capacity|written|tier_capacity)/i;
+const STATUS_NAME = /^(status|state|link_state|sync|partnership|active|redundancy)$/i;
+const GREEN = new Set(["online","active","yes","enabled","up","running","consistent_synchronized",
+  "consistent_synchronised","empty","fully_allocated","completed","connected","synchronized","synchronised"]);
+const AMBER = new Set(["degraded","deleting","syncing","initializing","initialising","not_empty","warning",
+  "offline_pending","inconsistent_copying","consistent_copying","prepared","preparing","stopped","idling",
+  "measured","excluded","migrating"]);
+const RED = new Set(["offline","error","failed","fatal","disconnected","idling_disconnected","stopped_no_sync",
+  "no","dead","corrupt","inconsistent_stopped"]);
+function chipClass(v){
+  const k = String(v).trim().toLowerCase();
+  if(GREEN.has(k)) return "chip-green";
+  if(AMBER.has(k)) return "chip-amber";
+  if(RED.has(k)) return "chip-red";
+  return "chip-gray";
+}
+
+// column typing for a given result (uses selected formatters + heuristics)
+function colType(name, values){
+  const hint = selectedFormatters[name];
+  if(hint === "capacity") return "capacity";
+  if(hint === "status") return "status";
+  if(CAP_NAME.test(name)){
+    // confirm most values look like capacities
+    const ok = values.filter(v=>parseCap(v)!=null).length;
+    if(ok >= Math.max(1, values.length*0.5)) return "capacity";
+  }
+  if(STATUS_NAME.test(name)) return "status";
+  return "text";
+}
+
+// ---------- system rows ----------
+function sysRowHtml(s){
+  const same = document.getElementById("sameCreds").checked;
+  const uniq = same ? "" : `
+    <td><input type="text" class="c-user" placeholder="username" value="${esc(s.username||"")}" autocomplete="off"></td>
+    <td><input type="password" class="c-pass" placeholder="password" autocomplete="off"></td>
+    <td style="width:66px"><input type="number" class="c-port" value="${s.port||22}" min="1" max="65535"></td>`;
+  return `<tr>
+    <td><input type="text" class="c-name" placeholder="Label (optional)" value="${esc(s.name||"")}"></td>
+    <td><input type="text" class="c-ip" placeholder="10.0.0.10" value="${esc(s.ip||"")}" autocomplete="off"></td>
+    ${uniq}
+    <td style="width:32px"><button class="iconbtn rm" title="Remove">✕</button></td>
+  </tr>`;
+}
+function renderSysHead(){
+  const same = document.getElementById("sameCreds").checked;
+  document.getElementById("sysHead").innerHTML =
+    `<th>Name</th><th>IP address</th>${same?"":"<th>User</th><th>Password</th><th>Port</th>"}<th></th>`;
+}
+function collectSystems(){
+  renderSysHead();
+  const same = document.getElementById("sameCreds").checked;
+  const gu = val("gUser"), gp = val("gPass"), gport = val("gPort")||22;
+  const out = [];
+  document.querySelectorAll("#sysBody tr").forEach(tr=>{
+    const ip = tr.querySelector(".c-ip").value.trim();
+    const name = tr.querySelector(".c-name").value.trim();
+    if(!ip && !name) return;
+    let username=gu, password=gp, port=gport;
+    if(!same){
+      username = tr.querySelector(".c-user").value.trim() || gu;
+      password = tr.querySelector(".c-pass").value || gp;
+      port = tr.querySelector(".c-port").value || gport;
+    }
+    out.push({name, ip, username, password, port:parseInt(port,10)||22});
+  });
+  return out;
+}
+function currentSysDefs(){ // for re-render preserving typed values (no passwords)
+  const defs=[];
+  document.querySelectorAll("#sysBody tr").forEach(tr=>{
+    defs.push({
+      name: tr.querySelector(".c-name").value,
+      ip: tr.querySelector(".c-ip").value,
+      username: tr.querySelector(".c-user")? tr.querySelector(".c-user").value : "",
+      port: tr.querySelector(".c-port")? tr.querySelector(".c-port").value : 22,
+    });
+  });
+  return defs;
+}
+function renderSystems(defs){
+  renderSysHead();
+  const body = document.getElementById("sysBody");
+  body.innerHTML = (defs.length?defs:[{}]).map(sysRowHtml).join("");
+  body.querySelectorAll(".rm").forEach(b=>b.onclick=()=>{
+    const rows = body.querySelectorAll("tr");
+    if(rows.length<=1){ b.closest("tr").querySelectorAll("input").forEach(i=>i.value=i.type==="number"?"22":""); }
+    else b.closest("tr").remove();
+  });
+}
+
+// ---------- search / catalog ----------
+function scoreEntry(e, q){
+  const hay = (e.label+" "+(e.keywords||[]).join(" ")+" "+e.command+" "+e.description).toLowerCase();
+  if(hay.includes(q)) return e.label.toLowerCase().startsWith(q)?3:(e.label.toLowerCase().includes(q)?2:1);
+  // token match
+  const toks = q.split(/\s+/).filter(Boolean);
+  if(toks.length && toks.every(t=>hay.includes(t))) return 1;
+  return 0;
+}
+function renderSuggest(q){
+  const box = document.getElementById("suggest");
+  q = q.trim().toLowerCase();
+  let list;
+  if(!q){ list = CATALOG.slice(); }
+  else {
+    list = CATALOG.map(e=>[scoreEntry(e,q),e]).filter(x=>x[0]>0)
+                  .sort((a,b)=>b[0]-a[0]).map(x=>x[1]);
+  }
+  if(!list.length){ box.innerHTML = `<div class="sug"><div class="d">No match — try the Advanced box below.</div></div>`; box.classList.add("open"); return; }
+  let html="", cat="";
+  list.forEach(e=>{
+    if(!q && e.category!==cat){ cat=e.category; html+=`<div class="cat-label">${esc(cat)}</div>`; }
+    html+=`<div class="sug" data-id="${e.id}">
+      <div class="t">${esc(e.label)} <span class="c">${esc(e.command)}</span></div>
+      <div class="d">${esc(e.description)}</div></div>`;
+  });
+  box.innerHTML = html;
+  box.classList.add("open");
+  box.querySelectorAll(".sug[data-id]").forEach(el=>el.onclick=()=>selectEntry(el.dataset.id));
+}
+function selectEntry(id){
+  const e = CATALOG.find(x=>x.id===id);
+  if(!e) return;
+  selectedCommand = e.command;
+  selectedFormatters = e.formatters||{};
+  selectedColumns = e.columns||[];
+  document.getElementById("selLbl").textContent = e.label;
+  document.getElementById("selDesc").textContent = e.description;
+  document.getElementById("selCmd").textContent = e.command;
+  document.getElementById("selBox").classList.add("show");
+  document.getElementById("search").value = e.label;
+  document.getElementById("suggest").classList.remove("open");
+}
+function useFreeCommand(){
+  const c = val("freeCmd").trim();
+  if(!c) return;
+  selectedCommand = c; selectedFormatters = {}; selectedColumns = [];
+  document.getElementById("selLbl").textContent = "Custom command";
+  document.getElementById("selDesc").textContent = "Free-form read-only command.";
+  document.getElementById("selCmd").textContent = c;
+  document.getElementById("selBox").classList.add("show");
+}
+
+// ---------- run ----------
+async function run(){
+  const systems = collectSystems();
+  const msg = document.getElementById("topMsg");
+  msg.innerHTML="";
+  if(!selectedCommand){ msg.innerHTML = errBox("Pick a query above (or use the Advanced box)."); return; }
+  if(!systems.length){ msg.innerHTML = errBox("Add at least one system with an IP address."); return; }
+  const missing = systems.some(s=>!s.username || !s.password);
+  if(missing){ msg.innerHTML = errBox("Enter a username and password (global, or per-system if unique creds is on)."); return; }
+  const btn = document.getElementById("runBtn");
+  btn.disabled = true; btn.innerHTML = `<span class="spin"></span> Running…`;
+  document.getElementById("runState").textContent = `Contacting ${systems.length} system(s)…`;
+  try{
+    const r = await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({command:selectedCommand, systems})});
+    const data = await r.json();
+    if(!r.ok){ msg.innerHTML = errBox(data.error||"Request failed."); return; }
+    lastResults = data.results; lastCommand = data.command;
+    renderResults(data);
+  }catch(e){ msg.innerHTML = errBox("Could not reach the local server: "+e.message); }
+  finally{
+    btn.disabled=false; btn.innerHTML="▶ Run"; document.getElementById("runState").textContent="";
+  }
+}
+
+// ── per-card layout state ────────────────────────────────────
+// Each rendered table keeps its own current column/row arrangement so we can
+// reorder, reset, mirror across cards, and remember a preferred column order.
+//   colOrder / rowOrder : arrays of ORIGINAL indices, in current visual order
+//   origColOrder / origRowOrder : the layout as first returned by the array
+const cardState = {};   // cardId -> state
+
+// Preferred column order is remembered per command (by column NAME) so a
+// re-run of the same query keeps your arrangement. Rows are data, so row
+// order is never persisted across runs.
+function colKey(){ return "svc-colorder:"+(lastCommand||""); }
+function loadColOrder(){ try{ return JSON.parse(localStorage.getItem(colKey())||"null"); }catch(e){ return null; } }
+function saveColOrder(names){ try{ localStorage.setItem(colKey(), JSON.stringify(names)); }catch(e){} }
+function clearColOrder(){ try{ localStorage.removeItem(colKey()); }catch(e){} }
+function persistColOrder(st){ saveColOrder(st.colOrder.map(i=>st.r.columns[i])); }
+
+// Re-derive a column order (array of original indices) from a list of names,
+// keeping any columns not named in their existing relative order at the end.
+function orderByNames(base, cols, names){
+  if(!names || !names.length) return base.slice();
+  const rem = base.slice(), out = [];
+  names.forEach(nm=>{ const p = rem.findIndex(i=>cols[i]===nm); if(p>=0){ out.push(rem[p]); rem.splice(p,1); } });
+  return out.concat(rem);
+}
+
+function headHtml(r, withBtns){
+  const cnt = r.ok ? (r.shape==="detail" ? "details" : (r.rows.length+" rows")) : "error";
+  const btns = withBtns
+    ? `<button class="sc-btn js-reset" title="Restore the original layout returned by the array">↺ Reset</button>
+       <button class="sc-btn js-apply" title="Apply this column order to every system shown">⧉ Apply to all</button>`
+    : "";
+  return `<div class="sc-head"><span class="nm">${esc(r.system||"")}</span>
+      <span class="ip">${esc(r.ip||"")}</span>
+      <span class="sc-btns">${btns}<span class="cnt">${cnt}</span></span></div>`;
+}
+
+function renderCard(r, wide){
+  if(!r.ok){
+    return {html:`<div class="syscard">${headHtml(r,false)}<div class="sc-err">⚠ ${esc(r.error||"Unknown error")}</div></div>`};
+  }
+  if(!r.rows.length){
+    return {html:`<div class="syscard">${headHtml(r,false)}<div class="empty-state">No items returned.</div></div>`};
+  }
+  const cardId = "card-"+Math.random().toString(36).slice(2);
+  // Original (reset) layout: detail views stay as returned; list views use the
+  // catalog's preferred column order — this is the "original layout".
+  const origColOrder = r.shape==="detail" ? r.columns.map((c,i)=>i) : orderColumns(r.columns);
+  const savedNames = loadColOrder();
+  const colOrder = savedNames ? orderByNames(origColOrder, r.columns, savedNames) : origColOrder.slice();
+  const origRowOrder = r.rows.map((_,i)=>i);
+  const state = {
+    r, colOrder,
+    origColOrder: origColOrder.slice(),
+    rowOrder: origRowOrder.slice(),
+    origRowOrder: origRowOrder.slice(),
+  };
+  cardState[cardId] = state;
+  const html = `<div class="syscard ${wide?'wide':''}" id="${cardId}">${headHtml(r,true)}<div class="sc-body">${renderTable(state)}</div></div>`;
+  return {html, cardId};
+}
+
+// Rebuild one card's table in place after its order changes, and re-wire drag.
+function rerenderCard(cardId){
+  const st = cardState[cardId], card = document.getElementById(cardId);
+  if(!st || !card) return;
+  card.querySelector(".sc-body").innerHTML = renderTable(st);
+  wireDragTable(card);
+}
+
+// Wire the per-card Reset / Apply-to-all buttons.
+function wireCardControls(card, cardId){
+  const st = cardState[cardId];
+  const reset = card.querySelector(".js-reset");
+  const apply = card.querySelector(".js-apply");
+  if(reset) reset.onclick = ()=>{
+    st.colOrder = st.origColOrder.slice();
+    st.rowOrder = st.origRowOrder.slice();
+    clearColOrder();               // forget the remembered column order too
+    rerenderCard(cardId);
+  };
+  if(apply) apply.onclick = ()=>{
+    const names = st.colOrder.map(i=>st.r.columns[i]);
+    saveColOrder(names);           // remember it for this command
+    Object.keys(cardState).forEach(id=>{
+      const s = cardState[id];
+      s.colOrder = orderByNames(s.origColOrder, s.r.columns, names);
+      rerenderCard(id);
+    });
+  };
+}
+
+function orderColumns(cols){
+  if(!selectedColumns.length) return cols.map((c,i)=>i);
+  const idx=[], used=new Set();
+  selectedColumns.forEach(name=>{ const i=cols.indexOf(name); if(i>=0){idx.push(i);used.add(i);} });
+  cols.forEach((c,i)=>{ if(!used.has(i)) idx.push(i); });
+  return idx;
+}
+function renderTable(state){
+  const {r, colOrder, rowOrder} = state;
+  const cols = r.columns, isDetail = r.shape==="detail";
+  // per (visual) column type, computed over the rows currently shown
+  const types = colOrder.map(ci=>{
+    if(isDetail) return "text";
+    return colType(cols[ci], rowOrder.map(ri=>r.rows[ri][ci]));
+  });
+  const capTotals = colOrder.map(()=>0), hasCap = colOrder.map(()=>false);
+  // Header: a leading (empty) grip cell keeps the header aligned 1:1 with the
+  // body's grip column. data-pos = current visual position; data-name = column.
+  const th = "<tr><th class='grip-cell'></th>"+colOrder.map((ci,pos)=>
+      `<th data-pos="${pos}" data-name="${esc(cols[ci])}" draggable="true" `+
+      `title="Drag left/right to move this column (its data moves too)">`+
+      `<span class="th-grip">⋮⋮</span>${esc(cols[ci])}</th>`).join("")+"</tr>";
+  let body = rowOrder.map((ri, pos)=>{
+    const row = r.rows[ri];
+    return `<tr data-pos="${pos}"><td class="grip-cell"><span class="row-grip" title="Drag to reorder row">⠿</span></td>`+colOrder.map((ci,k)=>{
+      let v = row[ci]==null?"":row[ci];
+      const t = types[k];
+      if(t==="capacity"){
+        const b = parseCap(v);
+        if(b!=null){ capTotals[k]+=b; hasCap[k]=true; return `<td class="num">${esc(humanize(b))}</td>`; }
+        return `<td class="num">${esc(v)}</td>`;
+      }
+      if(t==="status" && v!==""){
+        return `<td><span class="chip ${chipClass(v)}">${esc(v)}</span></td>`;
+      }
+      return `<td>${esc(v)}</td>`;
+    }).join("")+"</tr>";
+  }).join("");
+  // totals row if any capacity column (not draggable — class="total")
+  if(!isDetail && hasCap.some(Boolean) && rowOrder.length>1){
+    let tot = "<tr class='total'><td class='grip-cell'></td>"+colOrder.map((ci,k)=>{
+      if(k===0) return `<td>TOTAL (${rowOrder.length})</td>`;
+      if(hasCap[k]) return `<td class="num">${esc(humanize(capTotals[k]))}</td>`;
+      return "<td></td>";
+    }).join("")+"</tr>";
+    body += tot;
+  }
+  return `<table class="data"><thead>${th}</thead><tbody>${body}</tbody></table>`;
+}
+
+// ── edge auto-scroll during a drag ───────────────────────────
+// Native HTML5 drag doesn't scroll containers, so a drop target that's scrolled
+// out of view (a wide table, or a long one) can't be reached. This controller
+// watches the pointer during a drag and scrolls `container` when it nears an
+// edge — horizontally to reach off-screen columns, vertically for rows.
+function edgeAutoScroll(container){
+  const EDGE = 52, MAX = 20;               // trigger band (px) and top speed (px/frame)
+  let vx = 0, vy = 0, raf = null, on = false;
+  const ramp = d => Math.min(MAX, (d / EDGE) * MAX);   // faster the closer to the edge
+  function step(){
+    if(on && (vx || vy)){
+      container.scrollLeft += vx; container.scrollTop += vy;
+      raf = requestAnimationFrame(step);
+    } else raf = null;
+  }
+  function onOver(e){
+    const r = container.getBoundingClientRect();
+    vx = e.clientX < r.left + EDGE   ? -ramp(r.left + EDGE - e.clientX)
+       : e.clientX > r.right - EDGE  ?  ramp(e.clientX - (r.right - EDGE)) : 0;
+    vy = e.clientY < r.top + EDGE    ? -ramp(r.top + EDGE - e.clientY)
+       : e.clientY > r.bottom - EDGE ?  ramp(e.clientY - (r.bottom - EDGE)) : 0;
+    if((vx || vy) && !raf) raf = requestAnimationFrame(step);
+  }
+  return {
+    start(){ on = true; container.addEventListener("dragover", onOver); },
+    stop(){ on = false; vx = vy = 0; container.removeEventListener("dragover", onOver);
+            if(raf){ cancelAnimationFrame(raf); raf = null; } }
+  };
+}
+
+// ── attach drag behaviour to a rendered syscard ──────────────
+// All reordering mutates the card's colOrder/rowOrder state and re-renders,
+// so the model stays the single source of truth (drives CSV, reset, etc.).
+function wireDragTable(cardEl){
+  const st = cardState[cardEl.id];
+  const table = cardEl.querySelector("table.data");
+  if(!table || !st) return;
+
+  // Auto-scroll this card's body toward whichever edge the pointer approaches
+  // during a column or row drag (started/stopped in the drag handlers below).
+  const scroller = edgeAutoScroll(cardEl.querySelector(".sc-body"));
+
+  const dataThs = [...table.querySelectorAll("thead th:not(.grip-cell)")];
+  const clearColHi = ()=>table.querySelectorAll("thead th").forEach(t=>t.classList.remove("col-drag-over"));
+  const hiCol = pos=>dataThs.forEach(t=>t.classList.toggle("col-drag-over", +t.dataset.pos===pos));
+
+  // Move a column within the order array, then re-render + remember it.
+  function moveColumn(fromPos, toPos){
+    if(fromPos===toPos) return;
+    const arr = st.colOrder;
+    const [m] = arr.splice(fromPos, 1);
+    arr.splice(toPos, 0, m);
+    persistColOrder(st);
+    rerenderCard(cardEl.id);
+  }
+
+  // ── COLUMN DRAG ───────────────────────────────────────────
+  let dragPos = null;
+  dataThs.forEach(th=>{
+    th.addEventListener("dragstart", e=>{
+      dragPos = +th.dataset.pos;
+      th.classList.add("col-dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", "col");
+      e.stopPropagation();
+      scroller.start();
+    });
+    th.addEventListener("dragend", ()=>{
+      th.classList.remove("col-dragging");
+      clearColHi(); dragPos = null;
+      scroller.stop();
+    });
+    th.addEventListener("dragover", e=>{
+      if(dragPos === null) return;
+      e.preventDefault(); e.stopPropagation();
+      hiCol(+th.dataset.pos);
+    });
+    th.addEventListener("dragleave", ()=>th.classList.remove("col-drag-over"));
+    th.addEventListener("drop", e=>{
+      if(dragPos === null) return;
+      e.preventDefault(); e.stopPropagation();
+      moveColumn(dragPos, +th.dataset.pos);
+      dragPos = null;
+    });
+  });
+
+  // Allow dropping a column header anywhere over the table body — the drop
+  // resolves to whichever column the cursor is above.
+  const tbody = table.querySelector("tbody");
+  tbody.addEventListener("dragover", e=>{
+    if(dragPos === null) return;             // not a column drag — ignore
+    e.preventDefault();
+    const firstRow = tbody.querySelector("tr:not(.total)");
+    if(!firstRow) return;
+    let best = null, bestDist = Infinity;
+    [...firstRow.querySelectorAll("td")].slice(1).forEach((td, ci)=>{
+      const rc = td.getBoundingClientRect();
+      const d = Math.abs(e.clientX - (rc.left + rc.width/2));
+      if(d < bestDist){ bestDist = d; best = ci; }
+    });
+    if(best !== null) hiCol(best);
+  });
+  tbody.addEventListener("dragleave", e=>{
+    if(!tbody.contains(e.relatedTarget)) clearColHi();
+  });
+  tbody.addEventListener("drop", e=>{
+    if(dragPos === null) return;             // not a column drag
+    e.preventDefault(); e.stopPropagation();
+    const toTh = table.querySelector("thead th.col-drag-over");
+    clearColHi();
+    if(toTh) moveColumn(dragPos, +toTh.dataset.pos);
+    dragPos = null;
+  });
+
+  // ── ROW DRAG ─────────────────────────────────────────────
+  let dragRowPos = null, dragRowEl = null;
+  table.querySelectorAll("tbody tr:not(.total)").forEach(tr=>{
+    // Row drag only activates when the grip handle is mousedown'd — never set
+    // tr.draggable globally, or it would swallow column-header drops.
+    tr.addEventListener("mousedown", e=>{ tr.draggable = !!e.target.closest(".row-grip"); });
+    tr.addEventListener("mouseup",   ()=>{ tr.draggable = false; });
+
+    tr.addEventListener("dragstart", e=>{
+      if(!tr.draggable){ e.preventDefault(); return; }
+      dragRowPos = +tr.dataset.pos; dragRowEl = tr;
+      requestAnimationFrame(()=>tr.classList.add("row-dragging"));
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", "row");
+      e.stopPropagation();
+      scroller.start();
+    });
+    tr.addEventListener("dragend", ()=>{
+      tr.draggable = false;
+      table.querySelectorAll("tbody tr").forEach(r=>r.classList.remove("row-dragging","row-drag-over"));
+      dragRowPos = null; dragRowEl = null;
+      scroller.stop();
+    });
+    tr.addEventListener("dragover", e=>{
+      if(dragRowPos === null || tr === dragRowEl) return;
+      e.preventDefault(); e.stopPropagation();
+      table.querySelectorAll("tbody tr").forEach(r=>r.classList.remove("row-drag-over"));
+      tr.classList.add("row-drag-over");
+    });
+    tr.addEventListener("dragleave", ()=>tr.classList.remove("row-drag-over"));
+    tr.addEventListener("drop", e=>{
+      if(dragRowPos === null || tr === dragRowEl) return;
+      e.preventDefault(); e.stopPropagation();
+      const toPos = +tr.dataset.pos;
+      const arr = st.rowOrder;
+      const [m] = arr.splice(dragRowPos, 1);
+      arr.splice(toPos, 0, m);
+      dragRowPos = null; dragRowEl = null;
+      rerenderCard(cardEl.id);
+    });
+  });
+}
+
+// ── grab-to-pan on the results scroll container ──────────────
+// Wired once on page load (not per-render). Lets the user click-and-drag
+// anywhere in the results area to pan it horizontally — like a map.
+// Column-header drags and row-grip drags are not intercepted.
+(function wireScrollPan(){
+  const el = document.querySelector(".res-scroll");
+  if(!el) return;
+  let active = false, startX = 0, scrollX = 0, rafId = null;
+
+  el.addEventListener("mousedown", e=>{
+    if(e.button !== 0) return;
+    if(e.target.closest("th, .row-grip, button, a, input, select")) return;
+    active = true;
+    startX  = e.clientX;
+    scrollX = el.scrollLeft;
+    el.classList.add("panning");
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", e=>{
+    if(!active) return;
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(()=>{
+      el.scrollLeft = scrollX - (e.clientX - startX);
+    });
+  });
+
+  window.addEventListener("mouseup", ()=>{
+    if(!active) return;
+    active = false;
+    el.classList.remove("panning");
+    rafId = null;
+  });
+  // Also cancel if mouse leaves the window entirely
+  window.addEventListener("blur", ()=>{ active = false; el.classList.remove("panning"); });
+})();
+
+// ── updated renderResults to wire drag after DOM insertion ───
+function renderResults(data){
+  const grid = document.getElementById("resGrid");
+  document.getElementById("ranCmd").textContent = data.command;
+  document.getElementById("ranCmd").style.display="";
+  const wide = data.results.some(r=>r.columns && r.columns.length>7);
+
+  // fresh registry each run (drops state from any previous results)
+  Object.keys(cardState).forEach(k=>delete cardState[k]);
+
+  const cards = data.results.map(r=>renderCard(r, wide));
+  grid.innerHTML = cards.map(c=>c.html).join("");
+
+  // wire drag + toolbar on cards that have a table
+  cards.forEach(c=>{
+    if(!c.cardId) return;
+    const el = document.getElementById(c.cardId);
+    if(el){ wireDragTable(el); wireCardControls(el, c.cardId); }
+  });
+
+  const anyOk = data.results.some(r=>r.ok && r.rows && r.rows.length);
+  document.getElementById("exportCsv").style.display = anyOk?"":"none";
+}
+
+// ---------- CSV — reads current DOM order ───────────────────
+function exportCsv(){
+  if(!lastResults) return;
+  const lines = [];
+  document.querySelectorAll(".syscard").forEach(card=>{
+    const table = card.querySelector("table.data");
+    if(!table) return;
+    const nm = card.querySelector(".sc-head .nm");
+    const sysName = nm ? nm.textContent : "";
+    // headers — skip the grip cell; use data-name so the "⋮⋮" cue isn't included
+    const ths = [...table.querySelectorAll("thead th:not(.grip-cell)")]
+      .map(th=>th.dataset.name!=null?th.dataset.name:th.textContent);
+    lines.push(["system"].concat(ths).map(csvCell).join(","));
+    // body rows
+    table.querySelectorAll("tbody tr:not(.total)").forEach(tr=>{
+      const tds = [...tr.querySelectorAll("td")].slice(1); // skip grip cell
+      const vals = tds.map(td=>{
+        const chip = td.querySelector(".chip");
+        return chip ? chip.textContent : td.textContent;
+      });
+      lines.push([sysName].concat(vals).map(csvCell).join(","));
+    });
+    lines.push("");
+  });
+  const blob = new Blob([lines.join("\n")],{type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = (lastCommand.split(/\s+/)[0]||"results")+".csv";
+  a.click();
+}
+function csvCell(v){ v=v==null?"":String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+
+// ---------- profiles ----------
+async function saveHosts(){
+  const systems = collectSystems().map(s=>({name:s.name, ip:s.ip, port:s.port, username:s.username}));
+  await fetch("/api/profiles",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({systems})});
+  const n = document.getElementById("saveNote");
+  n.textContent = "Saved "+systems.length+" host(s) (no passwords)."; setTimeout(()=>n.textContent="",4000);
+}
+
+// ---------- helpers ----------
+function val(id){ return document.getElementById(id).value; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function errBox(m){ return `<div class="msg msg-err">⚠ ${esc(m)}</div>`; }
+
+// ---------- init ----------
+async function init(){
+  const q = await (await fetch("/api/queries")).json();
+  CATALOG = q.catalog; ALL_CMDS = q.all_commands;
+  document.getElementById("cmdList").innerHTML = ALL_CMDS.map(c=>`<option value="${c}">`).join("");
+
+  // load saved profiles
+  let defs = [];
+  try{ defs = (await (await fetch("/api/profiles")).json()).systems || []; }catch(e){}
+  renderSystems(defs);
+
+  // wire up
+  document.getElementById("sameCreds").onchange = ()=>renderSystems(currentSysDefs());
+  document.getElementById("addSys").onclick = ()=>{ const d=currentSysDefs(); d.push({}); renderSystems(d); };
+  document.getElementById("saveHosts").onclick = saveHosts;
+  document.getElementById("runBtn").onclick = run;
+  document.getElementById("exportCsv").onclick = exportCsv;
+  document.getElementById("useFree").onclick = useFreeCommand;
+
+  const search = document.getElementById("search");
+  search.oninput = ()=>renderSuggest(search.value);
+  search.onfocus = ()=>renderSuggest(search.value);
+  document.addEventListener("click",e=>{
+    if(!e.target.closest(".search-wrap")) document.getElementById("suggest").classList.remove("open");
+  });
+  search.onkeydown = e=>{ if(e.key==="Enter"){ const first=document.querySelector(".sug[data-id]"); if(first){selectEntry(first.dataset.id);} e.preventDefault(); } };
+}
+init();
+</script>
+</body>
+</html>
